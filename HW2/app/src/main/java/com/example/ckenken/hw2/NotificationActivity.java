@@ -12,6 +12,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -52,6 +53,19 @@ public class NotificationActivity extends AppCompatActivity {
             }
         });
 
+        Bundle b = getIntent().getExtras();
+
+        mAlarm_id = b.getInt("alarm_id");
+        int type = b.getInt("type");
+        mHour = b.getInt("hour");
+        mMin = b.getInt("min");
+        mRingtone = Uri.parse(b.getString("ringtone"));
+
+        Log.d("m_Alarm_id:", Integer.toString(mAlarm_id));
+        Log.d("type:", Integer.toString(type));
+        Log.d("mHour:", String.valueOf(mHour));
+        Log.d("mMin:", String.valueOf(mMin));
+
         mCloseButton = (Button)findViewById(R.id.button2);
         mLaterButton = (Button)findViewById(R.id.button4);
         mTv = (TextView) findViewById(R.id.textView5);
@@ -59,10 +73,17 @@ public class NotificationActivity extends AppCompatActivity {
         mCloseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                boolean flag = false;
+                for(int i = 0; i < AlarmService.alarms.get(mAlarm_id).repeat.length; i++) {
+                    if (AlarmService.alarms.get(mAlarm_id).repeat[i]){
+                        flag = true;
+                        break;
+                    }
+                }
+                AlarmService.alarms.get(mAlarm_id).a_on = flag;
 
                 mp.stop();
                 NotificationActivity.this.finish();
-
             }
         });
 
@@ -96,27 +117,17 @@ public class NotificationActivity extends AppCompatActivity {
                 NotificationActivity.this.finish();
             }
         });
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        Bundle b = getIntent().getExtras();
-
-        mAlarm_id = b.getInt("alarm_id");
-
-        switch (b.getInt("type"))
+        switch (type)
         {
             case AlarmService.NOTIFICATION_REGULAR:
-                mHour = b.getInt("hour");
-                mMin = b.getInt("min");
-                mRingtone = Uri.parse(b.getString("ringtone"));
 //                mAlarm_id = b.getInt("alarm_id");
                 Calendar c = Calendar.getInstance();
-//                c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), AlarmService.alarms.get(mAlarm_id).hour, AlarmService.alarms.get(mAlarm_id).min, 0);
-                c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), mHour, mMin, 0);
 
+                if (AlarmService.alarms != null && AlarmService.alarms.size() > 0) {
+                    c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), AlarmService.alarms.get(mAlarm_id).hour, AlarmService.alarms.get(mAlarm_id).min, 0);
+                    //           c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), mHour, mMin, 0);
+                }
                 mTv.setText(mAdf.format(c.getTime()).toString());
 
                 break;
@@ -128,13 +139,16 @@ public class NotificationActivity extends AppCompatActivity {
             default:
                 break;
         }
+    }
 
-
+    @Override
+    protected void onResume() {
+        super.onResume();
         //    Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
-    //    Uri notification = AlarmService.alarms.get(mAlarm_id).ringtone;
+        Uri notification = AlarmService.alarms.get(mAlarm_id).ringtone;
 
-        Uri notification = mRingtone;
+     //   Uri notification = mRingtone;
 
       //  Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
         // r.play();

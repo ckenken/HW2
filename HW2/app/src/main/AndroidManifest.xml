@@ -40,12 +40,6 @@
             android:exported="true" >
         </service>
 
-        <activity
-            android:name=".InputRepeatActivity"
-            android:label="@string/title_activity_input_repeat"
-            android:theme="@style/AppTheme.NoActionBar" >
-        </activity>
-
         <service
             android:name=".TenMinuteService"
             android:enabled="true"

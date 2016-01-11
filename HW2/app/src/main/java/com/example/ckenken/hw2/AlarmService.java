@@ -19,6 +19,7 @@ import java.util.Calendar;
 
 public class AlarmService extends Service {
 
+    final public static int MISSION_SETUPDATE = 400;
     final public static int MISSION_MAINSTART = 300;
     final public static int MISSION_TURNON = 100;
     final public static int MISSION_TURNOFF = 200;
@@ -47,9 +48,27 @@ public class AlarmService extends Service {
                     }
                 }
                 break;
+            case MISSION_SETUPDATE:
+                for(int i = 0; i<alarms.size(); i++) {
+                    Calendar c = Calendar.getInstance();
+                    boolean flag = false;
+
+                    for(int j = 0; j<alarms.size(); j++) {
+                        if(alarms.get(j).repeat[j]) {
+                            flag = true;
+                            break;
+                        }
+                    }
+
+                    if (alarms.get(i).a_on && ((alarms.get(i).repeat[c.get(Calendar.DAY_OF_WEEK)]) || !flag)) {
+                        turnOffAlarm(i);
+                        turnOnAlarm(i);
+                    }
+                }
+                break;
             case MISSION_TURNON:
                 id = b.getInt("alarm_id");
-                if (alarms.size() > 0) {
+                if (alarms.size() > 0 && alarms.get(id).a_on) {
                     turnOnAlarm(id);
                 }
                 break;
@@ -86,6 +105,11 @@ public class AlarmService extends Service {
         if (checkBefore(c)) {
             c.add(Calendar.DATE, 1);
         }
+
+        Bundle testB = intent.getExtras();
+
+        Log.d("intent_putHour:", Integer.toString(testB.getInt("hour")));
+        Log.d("intent_putMin", Integer.toString(testB.getInt("min")));
 
       //  final int _id = (int) System.currentTimeMillis();
         final int _id = id;

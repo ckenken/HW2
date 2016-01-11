@@ -130,8 +130,13 @@ public class SetAlarmActivity extends AppCompatActivity {
             AlarmService.alarms.add(new Alarm(0, MainActivity.ALARM_OFF, 11, 21, MainActivity.AM));
             AlarmService.alarmManagers.add((AlarmManager) getSystemService(ALARM_SERVICE));
         }
-
         mListView.invalidateViews();
+
+        Intent startIntent = new Intent(SetAlarmActivity.this, AlarmService.class);
+        Bundle b = new Bundle();
+        b.putInt("mission_id", AlarmService.MISSION_SETUPDATE);
+        startIntent.putExtras(b);
+        startService(startIntent);
     }
 
     ///////////////////////////////  AlarmAdapter  //////////////////////////////////
@@ -230,26 +235,26 @@ public class SetAlarmActivity extends AppCompatActivity {
 
                 if (isChecked) {
                     Log.d("on:", Integer.toString(id));
-
+                    AlarmService.alarms.get(id).a_on = MainActivity.ALARM_ON;
                     Intent startIntent = new Intent(mContext, AlarmService.class);
                     Bundle b = new Bundle();
                     b.putInt("mission_id", AlarmService.MISSION_TURNON);
                     b.putInt("alarm_id", id);
                     startIntent.putExtras(b);
                     mContext.startService(startIntent);
-                    AlarmService.alarms.get(id).a_on = MainActivity.ALARM_ON;
+
                 }
                 else {
 
                     Log.d("off:", Integer.toString(id));
-
+                    AlarmService.alarms.get(id).a_on = MainActivity.ALARM_OFF;
                     Intent startIntent = new Intent(mContext, AlarmService.class);
                     Bundle b = new Bundle();
                     b.putInt("mission_id", AlarmService.MISSION_TURNOFF);
                     b.putInt("alarm_id", id);
                     startIntent.putExtras(b);
                     mContext.startService(startIntent);
-                    AlarmService.alarms.get(id).a_on = MainActivity.ALARM_OFF;
+
                 }
 
                 try {

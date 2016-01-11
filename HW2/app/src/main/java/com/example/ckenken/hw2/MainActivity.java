@@ -21,6 +21,7 @@ import android.widget.TextView;
 import org.json.JSONException;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -117,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         SharedPreferences sharedPref = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
         String output = sharedPref.getString(getString(R.string.old_alarms_data), NO_OLD_DATA);
 
@@ -176,6 +176,8 @@ public class MainActivity extends AppCompatActivity {
                 editor.commit();
                 editor.remove(getString(R.string.old_alarms_data));
                 editor.commit();
+                AlarmService.alarms = new ArrayList<Alarm>();
+                System.gc();
             }
         });
 
@@ -189,6 +191,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        gogogoButton.setVisibility(View.INVISIBLE);
+        testSavePreference.setVisibility(View.INVISIBLE);
+        testRestorePreference.setVisibility(View.INVISIBLE);
+        showPreference.setVisibility(View.INVISIBLE);
+        testAlarmButton.setVisibility(View.INVISIBLE);
         ////////////////////  test block  //////////////////////
     }
 
