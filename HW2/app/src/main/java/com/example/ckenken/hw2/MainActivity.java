@@ -2,18 +2,23 @@ package com.example.ckenken.hw2;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import org.json.JSONException;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -26,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     public static final int PM = 1;
     public static boolean ALARM_ON = true;
     public static boolean ALARM_OFF = false;
+    public static final String NO_OLD_DATA= "__NO_SAVE";
+    public static final String OLD_ALARMS_DATA = "com.ckenken.old.alarms.data";
 
     public static SimpleDateFormat sdf = new SimpleDateFormat("EEE, MM/dd hh:mm:ss aaa");
 
@@ -38,6 +45,11 @@ public class MainActivity extends AppCompatActivity {
     private Handler mhandler = new Handler();
 
     Button testAlarmButton;
+    Button testSavePreference;
+    Button testRestorePreference;
+    Button testRemovePreference;
+    Button gogogoButton;
+    TextView showPreference;
 
     private AlarmManager alarmManager;
 
@@ -106,12 +118,78 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        SharedPreferences sharedPref = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
+        String output = sharedPref.getString(getString(R.string.old_alarms_data), NO_OLD_DATA);
+
+        Log.d("OnCreate, old data:", output);
+
+        if (!output.equals(NO_OLD_DATA) && AlarmService.alarms.size() == 0) {
+            try {
+                AlarmService.restoreAlarms(output);
+                for(int i = 0; i<AlarmService.alarms.size(); i++) {
+                    AlarmService.alarmManagers.add((AlarmManager) getSystemService(ALARM_SERVICE));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
         Intent startIntent = new Intent(MainActivity.this, AlarmService.class);
         Bundle b = new Bundle();
         b.putInt("mission_id", AlarmService.MISSION_MAINSTART);
         startIntent.putExtras(b);
         startService(startIntent);
 
+        ////////////////////  test block  //////////////////////
+
+        testSavePreference = (Button) findViewById(R.id.button6);
+        testRestorePreference = (Button) findViewById(R.id.button7);
+        testRemovePreference = (Button) findViewById(R.id.button8);
+        showPreference = (TextView) findViewById(R.id.textView10);
+
+        testSavePreference.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences sharedPref = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString(getString(R.string.time_string), mLabel.getText().toString());
+                editor.commit();
+            }
+        });
+
+        testRestorePreference.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences sharedPref = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
+            //    int defaultValue = getResources().getInteger(R.string.saved_high_score_default);
+                String output = sharedPref.getString(getString(R.string.time_string), NO_OLD_DATA);
+                showPreference.setText(output);
+            }
+        });
+
+        testRemovePreference.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences sharedPref = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.remove(getString(R.string.time_string));
+                editor.commit();
+                editor.remove(getString(R.string.old_alarms_data));
+                editor.commit();
+            }
+        });
+
+        gogogoButton = (Button)findViewById(R.id.button9);
+
+        gogogoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(MainActivity.this, TestActivity.class);
+                startActivity(intent);
+            }
+        });
+        ////////////////////  test block  //////////////////////
     }
 
     @Override
@@ -130,6 +208,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         mhandler.removeCallbacks(mRun1);
+
+        try {
+            saveAlarms(AlarmService.getSaveAlarmsString());
+            Log.d("in_Check, saveString:", AlarmService.getSaveAlarmsString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
     @Override
     protected void onResume() {
@@ -150,5 +235,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void saveAlarms(String jaString)
+    {
+        SharedPreferences sharedPref = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        //editor.remove(getString(R.string.old_alarms_data));
+
+        Log.d("In_SaveAlarms2, jaStr:", jaString);
+
+        editor.putString(getString(R.string.old_alarms_data), jaString);
+        editor.commit();
     }
 }

@@ -1,6 +1,7 @@
 package com.example.ckenken.hw2;
 
 import android.app.PendingIntent;
+import android.net.Uri;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -14,9 +15,11 @@ public class Alarm {
     boolean a_on;
     int hour;
     int min;
-    int ampm;
+    //int ampm;
 //    ArrayList<Integer> repeat;
     boolean [] repeat;
+
+    Uri ringtone;
 
     PendingIntent pi;
 
@@ -24,6 +27,7 @@ public class Alarm {
 
     public Alarm()
     {
+        ringtone = Uri.parse("content:\\/\\/media\\/internal\\/audio\\/media\\/34");
     }
 
     public Alarm(int inputId, boolean inputA_ON, int inputHour, int inputMin, int inputAMPM)
@@ -32,8 +36,9 @@ public class Alarm {
         a_on = inputA_ON;
         hour = inputHour;
         min = inputMin;
-        ampm = inputAMPM;
+   //     ampm = inputAMPM;
         repeat = new boolean[7];
+        ringtone = Uri.parse("content://media/internal/audio/media/46");
     }
 
     public void setPendingPi(PendingIntent inputPi)
@@ -48,7 +53,7 @@ public class Alarm {
         temp.a_on = this.a_on;
         temp.hour = this.hour;
         temp.min = this.min;
-        temp.ampm = this.ampm;
+     //   temp.ampm = this.ampm;
 
         temp.repeat = new boolean[7];
 
@@ -57,6 +62,11 @@ public class Alarm {
         }
 
         return temp;
+    }
+
+    public void setRingtone(Uri uri)
+    {
+        this.ringtone = uri;
     }
 
     public String displayRepeat()

@@ -3,6 +3,10 @@ package com.example.ckenken.hw2;
 import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -39,6 +43,9 @@ public class InputAlarmTimeActivity extends AppCompatActivity {
     private String [] mWeek;
     private boolean [] mTempRepeatChoice = new boolean[7];
     private boolean [] mOriginalRepeatChoice = new boolean[7];
+
+    private int alarmId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +86,7 @@ public class InputAlarmTimeActivity extends AppCompatActivity {
         Bundle b = getIntent().getExtras();
 
         final int alarm_id = b.getInt("alarm_id");
+        alarmId = alarm_id;
 
         int hour = AlarmService.alarms.get(alarm_id).hour;
         int min = AlarmService.alarms.get(alarm_id).min;
@@ -159,6 +167,35 @@ public class InputAlarmTimeActivity extends AppCompatActivity {
 
             }
         });
+
+        final Ringtone ringtone = RingtoneManager.getRingtone(this, AlarmService.alarms.get(alarm_id).ringtone);
+        mRingtone.setText(ringtone.getTitle(this).toString());
+
+        mRingtone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Intent ringtone = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+                ringtone.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+                ringtone.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+                ringtone.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI,
+                        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+                startActivityForResult(ringtone, 0);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 0 && resultCode == RESULT_OK) {
+            final Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+            final Ringtone ringtone = RingtoneManager.getRingtone(this, uri);
+            // Get your title here `ringtone.getTitle(this)`
+            AlarmService.alarms.get(alarmId).setRingtone(uri);
+
+            mRingtone.setText(RingtoneManager.getRingtone(this, AlarmService.alarms.get(alarmId).ringtone).getTitle(this).toString());
+        }
     }
 
     public void showTimePickerDialog(final int alarm_id) {
